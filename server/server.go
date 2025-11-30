@@ -1,8 +1,13 @@
 package server
 
 import (
+	"context"
+	"fmt"
+
 	"cloud.google.com/go/firestore"
+	"github.com/MousaZa/e-vet/handlers"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/api/option"
 )
 
 type Server struct {
@@ -10,14 +15,22 @@ type Server struct {
 	DB *firestore.Client
 }
 
-func NewServer(r *gin.Engine, db *firestore.Client) *Server {
-	return &Server{R: r, DB: db}
+func NewServer() *Server {
+	r := gin.New()
+
+	ctx := context.Background()
+	opt := option.WithCredentialsFile("../e-vet.json")
+	db, err := firestore.NewClient(ctx, "e-vet-cd914", opt)
+	if err != nil {
+		panic(fmt.Sprintf("Error connecting with firestore: %s", err))
+	}
+	s := &Server{R: r, DB: db}
+	s.setupRoutes()
+	return s
 }
 
-func (s *Server) SetupRoutes() {
-	sg := s.R.Group("/stock")
-	pg := sg.Group("/product")
-	pg.POST("/")
+func (s *Server) setupRoutes() {
+	s.R.POST("/stock/product", handlers.AddProductWithDB(s.DB))
 }
 
 func (s *Server) RunServer() {
