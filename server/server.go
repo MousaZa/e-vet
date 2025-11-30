@@ -34,6 +34,6 @@ func (s *Server) setupRoutes() {
 	s.R.GET("/stock/products", handlers.GetProductsWithDB(s.DB))
 }
 
-func (s *Server) RunServer() {
+func (s *Server) Run() {
 	s.R.Run(":8080")
 }
