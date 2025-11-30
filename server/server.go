@@ -1,19 +1,23 @@
 package server
 
-import "github.com/gin-gonic/gin"
+import (
+	"cloud.google.com/go/firestore"
+	"github.com/gin-gonic/gin"
+)
 
 type Server struct {
-	R *gin.Engine
+	R  *gin.Engine
+	DB *firestore.Client
+}
+
+func NewServer(r *gin.Engine, db *firestore.Client) *Server {
+	return &Server{R: r, DB: db}
 }
 
 func (s *Server) SetupRoutes() {
 	sg := s.R.Group("/stock")
 	pg := sg.Group("/product")
 	pg.POST("/")
-}
-
-func NewServer(r *gin.Engine) *Server {
-	return &Server{R: r}
 }
 
 func (s *Server) RunServer() {
