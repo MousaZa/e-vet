@@ -15,10 +15,10 @@ func TestAddProduct(t *testing.T) {
 	w := httptest.NewRecorder()
 	b := `
 	{
-	"user_id":1,
-	"name":"test",
-	"quantity":20,
-	"last_price":4.99
+		"user_id":1,
+		"name":"test",
+		"quantity":20,
+		"last_price":4.99
 	}
 	`
 	r, _ := http.NewRequest(http.MethodPost, "/stock/product", strings.NewReader(b))

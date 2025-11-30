@@ -20,6 +20,7 @@ func AddProductWithDB(db *firestore.Client) func(*gin.Context) {
 			return
 		}
 		p.ID = int64(uuid.New()[0])
+		p.IsActive = true
 		st := db.Collection("Stock")
 		_, err1 := st.NewDoc().Create(c.Request.Context(), p)
 		if err1 != nil {
