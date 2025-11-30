@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -28,5 +29,36 @@ func AddProductWithDB(db *firestore.Client) func(*gin.Context) {
 			return
 		}
 		c.Writer.WriteHeader(http.StatusOK)
+	}
+}
+
+func GetProductsWithDB(db *firestore.Client) func(*gin.Context) {
+	return func(c *gin.Context) {
+		st := db.Collection("Stock")
+		docs := st.Documents(c.Request.Context())
+
+		var resp []models.Product
+		for {
+			n, err := docs.Next()
+			if err != nil {
+				break
+			}
+			var r models.Product
+			doc, err := n.Ref.Get(context.TODO())
+			if err != nil {
+				fmt.Printf("Error getting the docs: %s", err)
+				c.Writer.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			err = doc.DataTo(&r)
+			if err != nil {
+				fmt.Printf("Error getting the docs: %s", err)
+				c.Writer.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			resp = append(resp, r)
+		}
+		fmt.Println(resp)
+		c.JSON(http.StatusOK, resp)
 	}
 }

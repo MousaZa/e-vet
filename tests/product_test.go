@@ -11,7 +11,7 @@ import (
 )
 
 func TestAddProduct(t *testing.T) {
-	s := server.NewServer()
+	s := server.New()
 	w := httptest.NewRecorder()
 	b := `
 	{
@@ -21,7 +21,16 @@ func TestAddProduct(t *testing.T) {
 		"last_price":4.99
 	}
 	`
-	r, _ := http.NewRequest(http.MethodPost, "/stock/product", strings.NewReader(b))
+	r, _ := http.NewRequest(http.MethodPost, "/stock/products", strings.NewReader(b))
+	s.R.ServeHTTP(w, r)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestGetProducts(t *testing.T) {
+	s := server.New()
+	w := httptest.NewRecorder()
+
+	r, _ := http.NewRequest(http.MethodGet, "/stock/products", nil)
 	s.R.ServeHTTP(w, r)
 	assert.Equal(t, http.StatusOK, w.Code)
 }

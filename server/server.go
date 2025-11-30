@@ -15,7 +15,7 @@ type Server struct {
 	DB *firestore.Client
 }
 
-func NewServer() *Server {
+func New() *Server {
 	r := gin.New()
 
 	ctx := context.Background()
@@ -30,7 +30,8 @@ func NewServer() *Server {
 }
 
 func (s *Server) setupRoutes() {
-	s.R.POST("/stock/product", handlers.AddProductWithDB(s.DB))
+	s.R.POST("/stock/products", handlers.AddProductWithDB(s.DB))
+	s.R.GET("/stock/products", handlers.GetProductsWithDB(s.DB))
 }
 
 func (s *Server) RunServer() {
