@@ -8,34 +8,32 @@ import (
 	"cloud.google.com/go/firestore"
 	"github.com/MousaZa/e-vet/models"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func AddProductWithDB(db *firestore.Client) func(*gin.Context) {
-	return func(c *gin.Context) {
+	return func(ctx *gin.Context) {
 		var p models.Product
-		err := c.ShouldBindJSON(&p)
+		err := ctx.ShouldBindJSON(&p)
 		if err != nil {
 			fmt.Printf("Error parsing request body, %s", err)
-			c.Writer.WriteHeader(http.StatusBadRequest)
+			ctx.Writer.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		p.ID = int64(uuid.New()[0])
 		p.IsActive = true
 		st := db.Collection("Stock")
-		_, err1 := st.NewDoc().Create(c.Request.Context(), p)
+		_, err1 := st.NewDoc().Create(ctx.Request.Context(), p)
 		if err1 != nil {
-			c.Writer.WriteHeader(http.StatusInternalServerError)
+			ctx.Writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		c.Writer.WriteHeader(http.StatusOK)
+		ctx.Writer.WriteHeader(http.StatusOK)
 	}
 }
 
 func GetProductsWithDB(db *firestore.Client) func(*gin.Context) {
-	return func(c *gin.Context) {
+	return func(ctx *gin.Context) {
 		st := db.Collection("Stock")
-		docs := st.Documents(c.Request.Context())
+		docs := st.Documents(ctx.Request.Context())
 
 		var resp []models.Product
 		for {
@@ -47,18 +45,34 @@ func GetProductsWithDB(db *firestore.Client) func(*gin.Context) {
 			doc, err := n.Ref.Get(context.TODO())
 			if err != nil {
 				fmt.Printf("Error getting the docs: %s", err)
-				c.Writer.WriteHeader(http.StatusInternalServerError)
+				ctx.Writer.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 			err = doc.DataTo(&r)
 			if err != nil {
 				fmt.Printf("Error getting the docs: %s", err)
-				c.Writer.WriteHeader(http.StatusInternalServerError)
+				ctx.Writer.WriteHeader(http.StatusInternalServerError)
 				return
 			}
+			r.ID = doc.Ref.ID
 			resp = append(resp, r)
 		}
 		fmt.Println(resp)
-		c.JSON(http.StatusOK, resp)
+		ctx.JSON(http.StatusOK, resp)
+	}
+}
+
+func DeleteProductWithDB(db *firestore.Client) func(*gin.Context) {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		doc := db.Collection("Stock").Doc(id)
+
+		_, err := doc.Delete(ctx.Request.Context())
+		if err != nil {
+			fmt.Printf("Error deleting the product with id %s: %s", id, err)
+			ctx.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		ctx.Writer.WriteHeader(http.StatusOK)
 	}
 }

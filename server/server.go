@@ -24,14 +24,17 @@ func New() *Server {
 	if err != nil {
 		panic(fmt.Sprintf("Error connecting with firestore: %s", err))
 	}
+
 	s := &Server{R: r, DB: db}
 	s.setupRoutes()
+
 	return s
 }
 
 func (s *Server) setupRoutes() {
 	s.R.POST("/stock/products", handlers.AddProductWithDB(s.DB))
 	s.R.GET("/stock/products", handlers.GetProductsWithDB(s.DB))
+	s.R.DELETE("/stock/products/:id", handlers.DeleteProductWithDB(s.DB))
 }
 
 func (s *Server) Run() {
