@@ -99,7 +99,8 @@ func ConsumeProductWithDB(db *firestore.Client) func(*gin.Context) {
 		}
 		var d models.Product
 		ds.DataTo(&d)
-		d.Quantity -= ca.ConsumeAmt
+
+		d.Consume(ca.ConsumeAmt, db, ctx.Request.Context())
 
 		_, err = doc.Set(ctx.Request.Context(), d)
 

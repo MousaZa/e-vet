@@ -1,11 +1,14 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type User struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
+	ID            string         `json:"id"`
+	Username      string         `json:"username"`
+	Email         string         `json:"email"`
+	Notifications []Notification `json:"notifications"`
 }
 
 func (u *User) Update(productName string) {
