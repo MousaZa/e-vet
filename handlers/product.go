@@ -20,6 +20,8 @@ func AddProductWithDB(db *firestore.Client) func(*gin.Context) {
 			return
 		}
 		p.IsActive = true
+		// var u models.User
+		// p.Register(&u)
 		st := db.Collection("Stock")
 		_, err1 := st.NewDoc().Create(ctx.Request.Context(), p)
 		if err1 != nil {
@@ -73,6 +75,40 @@ func DeleteProductWithDB(db *firestore.Client) func(*gin.Context) {
 			ctx.Writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		ctx.Writer.WriteHeader(http.StatusOK)
+	}
+}
+
+type ConsumeRequest struct {
+	ConsumeAmt int `json:"consume_amt"`
+}
+
+func ConsumeProductWithDB(db *firestore.Client) func(*gin.Context) {
+	return func(ctx *gin.Context) {
+		var ca ConsumeRequest
+		ctx.ShouldBindJSON(&ca)
+
+		id := ctx.Param("id")
+		doc := db.Collection("Stock").Doc(id)
+
+		ds, err := doc.Get(ctx.Request.Context())
+		if err != nil {
+			fmt.Printf("Error getting the documnet: %s", err)
+			ctx.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		var d models.Product
+		ds.DataTo(&d)
+		d.Quantity -= ca.ConsumeAmt
+
+		_, err = doc.Set(ctx.Request.Context(), d)
+
+		if err != nil {
+			fmt.Printf("Error updating quantity: %s", err)
+			ctx.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		ctx.Writer.WriteHeader(http.StatusOK)
 	}
 }

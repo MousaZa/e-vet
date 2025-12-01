@@ -35,6 +35,7 @@ func (s *Server) setupRoutes() {
 	s.R.POST("/stock/products", handlers.AddProductWithDB(s.DB))
 	s.R.GET("/stock/products", handlers.GetProductsWithDB(s.DB))
 	s.R.DELETE("/stock/products/:id", handlers.DeleteProductWithDB(s.DB))
+	s.R.PUT("/stock/products/:id", handlers.ConsumeProductWithDB(s.DB))
 }
 
 func (s *Server) Run() {
