@@ -38,6 +38,7 @@ func (s *Server) setupRoutes() {
 	s.R.PUT("/stock/products/:id", handlers.ConsumeProductWithDB(s.DB))
 
 	s.R.POST("/user", handlers.CreateUserWithDB(s.DB))
+	s.R.POST("/user/login", handlers.LoginWithDB(s.DB))
 }
 
 func (s *Server) Run() {

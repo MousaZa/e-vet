@@ -35,3 +35,34 @@ func CreateUserWithDB(db *firestore.Client) func(*gin.Context) {
 		ctx.Writer.WriteHeader(http.StatusOK)
 	}
 }
+
+func LoginWithDB(db *firestore.Client) func(*gin.Context) {
+	return func(ctx *gin.Context) {
+		var lr models.LoginRequest
+		ctx.ShouldBindJSON(&lr)
+		q := db.Collection("Users").Where("Email", "==", lr.Email).Documents(ctx.Request.Context())
+		docs, err := q.GetAll()
+		if err != nil {
+			fmt.Printf("Something went wrong: %s\n", err)
+			ctx.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		doc := docs[0]
+		var u models.User
+
+		err = doc.DataTo(&u)
+		if err != nil {
+			fmt.Printf("Something went wrong: %s\n", err)
+			ctx.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(lr.Password))
+		if err != nil {
+			fmt.Printf("Wrong Password: %s\n", err)
+			ctx.Writer.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		ctx.JSON(http.StatusOK, models.LoginResponse{Username: u.Username, Token: ""})
+	}
+}
